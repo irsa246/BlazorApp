@@ -1,0 +1,122 @@
+﻿﻿@using BlazorApp.Shared;
+@inject HttpClient Http
+@inject NavigationManager nvm
+
+<h3>Here is Student Form</h3>
+
+<EditForm Model="@course" OnValidSubmit="@HandleOnSubmit">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+    <label>Enter Course ID</label>
+    <input type="text" placeholder="XYZ123" @bind-value="course.course_Id"/><br />
+    <label>Enter Course Name</label>
+    <input type="text" placeholder="Enter Course Marks" @bind-value="course.course_Name" /><br />
+    <label>Enter Course Marks</label>
+    <input type="number" @bind-value="course.marks" /><br />
+
+
+   
+    <button type="submit" >Submit</button>
+
+
+
+</EditForm>
+
+
+
+<table>
+
+    <th>Id</th>
+    <th>Name</th>
+    <th>Marks</th>
+
+
+ @foreach(Course cs  in courses )
+{
+    <tr>
+        <td>@cs.course_Id</td>
+        <td>@cs.course_Name</td>
+        <td>@cs.marks</td>
+        
+    </tr>
+
+
+
+}
+</table>
+<GreySectionComp.Components.StudentComp student="@course" />
+
+  <h3>Courses with Marks greater than 70</h3>
+   <ul>
+    @foreach (var course in coursesAbove70)
+    {
+        <li>@course.Name - @course.Marks</li>
+    }
+    </ul>
+
+   <h3>Courses with Marks greater than 90</h3>
+    <ul>
+    @foreach (var course in coursesAbove90)
+    {
+        <li>@course.Name - @course.Marks</li>
+    }
+   </ul>
+
+<h3>Courses with Marks less than 50</h3>
+<ul>
+    @foreach (var course in coursesBelow50)
+    {
+        <li>@course.Name - @course.Marks</li>
+    }
+</ul>
+
+@code {
+    Course course = new Course();
+
+
+    List<Course> courses = new List<Course>();
+
+    var coursesAbove70 = courses.Where(c => c.marks > 70).ToList();
+
+
+    var coursesAbove90 = courses.Where(c => c.marks > 90).ToList();
+
+
+    var coursesBelow50 = courses.Where(c => c.marks < 50).ToList();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        courses =  await Http.GetFromJsonAsync<List<Course>>("/pass");
+        //        var students = _dbcontext.Students. (x=>x.RollNumber).Skip(1).Take(1);
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        courses = await Http.GetFromJsonAsync<List<Course>>("/pass");
+
+    }
+
+
+
+
+    async void HandleOnSubmit()
+    {
+
+        var res = await Http.PostAsJsonAsync("/api/v1/Student", course);
+        if(res.IsSuccessStatusCode)
+        {
+
+            Console.WriteLine("Displayed OK!");
+
+            
+        }
+        StateHasChanged();
+
+    }
+
+
+}
